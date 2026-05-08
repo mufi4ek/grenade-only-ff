@@ -1,4 +1,4 @@
-name: Build CS# Plugin
+name: Build and Publish GrenadeOnlyFF
 
 on:
   push:
@@ -12,6 +12,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Show repo files (debug)
+        run: ls -la && ls -la libs || true
+
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -24,6 +27,9 @@ jobs:
         run: |
           dotnet restore src/GrenadeOnlyFF/GrenadeOnlyFF.csproj
           dotnet build src/GrenadeOnlyFF/GrenadeOnlyFF.csproj -c Release --no-restore
+
+      - name: Show build output (debug)
+        run: ls -la src/GrenadeOnlyFF/bin/Release || true
 
       - name: Pack artifact
         run: |
