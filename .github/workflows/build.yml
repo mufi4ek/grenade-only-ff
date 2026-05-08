@@ -1,0 +1,39 @@
+name: Build CS# Plugin
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Show dotnet info
+        run: dotnet --info
+
+      - name: Restore and Build
+        run: |
+          dotnet restore src/GrenadeOnlyFF/GrenadeOnlyFF.csproj
+          dotnet build src/GrenadeOnlyFF/GrenadeOnlyFF.csproj -c Release --no-restore
+
+      - name: Pack artifact
+        run: |
+          mkdir -p artifact
+          cp src/GrenadeOnlyFF/bin/Release/net8.0/*.dll artifact/ || true
+          cd artifact
+          zip -r ../GrenadeOnlyFF-artifact.zip *
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GrenadeOnlyFF
+          path: GrenadeOnlyFF-artifact.zip
