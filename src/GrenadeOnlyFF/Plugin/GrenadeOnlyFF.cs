@@ -1,14 +1,22 @@
 using System;
 using System.Collections.Generic;
-using CounterStrikeSharp; // замените на реальный неймспейс вашей версии
-using CounterStrikeSharp.Events;
-using CounterStrikeSharp.Entities;
-using CounterStrikeSharp.Plugins;
+
+// TODO: Заменить на реальные неймспейсы из CounterStrikeSharp.dll
+// Пример:
+// using CounterStrikeSharp.API;
+// using CounterStrikeSharp.API.Events;
+// using CounterStrikeSharp.API.Plugins;
+// using CounterStrikeSharp.API.Entities;
 
 namespace GrenadeOnlyFF
 {
-    public class GrenadeOnlyFF : Plugin
+    // TODO: Заменить BasePlugin на реальный базовый класс плагина из API
+    // Например: public class GrenadeOnlyFF : PluginBase
+    public class GrenadeOnlyFF /* : BasePlugin */ 
     {
+        // Если API требует атрибуты или регистрацию — добавь их здесь.
+        // Простейшая логика вынесена в методы, которые нужно привязать к событиям API.
+
         private bool _logAttempts = true;
         private HashSet<string> _allowedWeapons = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -19,73 +27,55 @@ namespace GrenadeOnlyFF
             "incendiarygrenade_thrown"
         };
 
-        public override void OnLoad()
+        // TODO: В API может быть метод OnLoad/OnEnable — переименуй/подпиши под API
+        public void OnLoad()
         {
-            EventManager.Subscribe("player_hurt", OnPlayerHurt);
-            EventManager.Subscribe("player_blind", OnPlayerBlind);
-            Logger.Info("GrenadeOnlyFF loaded");
+            // TODO: Подпишись на события через EventManager API
+            // Пример (заменить на реальные вызовы):
+            // EventManager.Subscribe("player_hurt", OnPlayerHurt);
+            // EventManager.Subscribe("player_blind", OnPlayerBlind);
         }
 
-        public override void OnUnload()
+        // TODO: В API может быть метод OnUnload/OnDisable — переименуй/подпиши под API
+        public void OnUnload()
         {
-            EventManager.Unsubscribe("player_hurt", OnPlayerHurt);
-            EventManager.Unsubscribe("player_blind", OnPlayerBlind);
-            Logger.Info("GrenadeOnlyFF unloaded");
+            // TODO: Отписка от событий
+            // EventManager.Unsubscribe("player_hurt", OnPlayerHurt);
+            // EventManager.Unsubscribe("player_blind", OnPlayerBlind);
         }
 
-        private void OnPlayerHurt(Event ev)
+        // Пример обработчика — адаптируй сигнатуру под реальный Event type
+        // TODO: заменить тип EventType на реальный тип события из API
+        private void OnPlayerHurt(object ev /* EventType ev */)
         {
-            int victimUserId = ev.GetInt("userid");
-            int attackerUserId = ev.GetInt("attacker");
-            int damage = ev.GetInt("dmg_health");
-            string weapon = ev.GetString("weapon");
+            // TODO: заменить доступ к полям события на реальные имена
+            // Пример псевдокода:
+            // int victimUserId = ev.GetInt("userid");
+            // int attackerUserId = ev.GetInt("attacker");
+            // int damage = ev.GetInt("dmg_health");
+            // string weapon = ev.GetString("weapon");
 
-            int victim = Engine.GetClientFromUserId(victimUserId);
-            int attacker = Engine.GetClientFromUserId(attackerUserId);
+            // TODO: получить client id через Engine API
+            // int victim = Engine.GetClientFromUserId(victimUserId);
+            // int attacker = Engine.GetClientFromUserId(attackerUserId);
 
-            if (!IsValidClient(victim) || !IsValidClient(attacker)) return;
-            if (victim == attacker) return;
-            if (Engine.GetTeam(attacker) != Engine.GetTeam(victim)) return;
+            // TODO: проверить валидность, команды и разрешённые оружия
+            // Если тиммейт и weapon не в _allowedWeapons — обнулить урон:
+            // ev.SetInt("dmg_health", 0);
+            // ev.SetInt("dmg_armor", 0);
 
-            if (IsAllowedGrenade(weapon))
-            {
-                return;
-            }
-
-            ev.SetInt("dmg_health", 0);
-            ev.SetInt("dmg_armor", 0);
-
-            if (_logAttempts)
-            {
-                Logger.Info($"[GrenadeOnlyFF] Blocked team damage: {Engine.GetClientName(attacker)} -> {Engine.GetClientName(victim)} weapon={weapon} dmg={damage}");
-            }
+            // Логирование:
+            // if (_logAttempts) Logger.Info($"Blocked team damage: {attackerName} -> {victimName} weapon={weapon} dmg={damage}");
         }
 
-        private void OnPlayerBlind(Event ev)
+        private void OnPlayerBlind(object ev /* EventType ev */)
         {
-            int victimUserId = ev.GetInt("userid");
-            int attackerUserId = ev.GetInt("attacker");
-
-            int victim = Engine.GetClientFromUserId(victimUserId);
-            int attacker = Engine.GetClientFromUserId(attackerUserId);
-
-            if (!IsValidClient(victim) || !IsValidClient(attacker)) return;
-            if (victim == attacker) return;
-            if (Engine.GetTeam(attacker) != Engine.GetTeam(victim)) return;
-
-            ev.SetFloat("duration", 0.0f);
-
-            if (_logAttempts)
-            {
-                Logger.Info($"[GrenadeOnlyFF] Blocked team flash: {Engine.GetClientName(attacker)} -> {Engine.GetClientName(victim)}");
-            }
+            // TODO: аналогично — обнулить duration для тиммейтов
+            // ev.SetFloat("duration", 0.0f);
+            // if (_logAttempts) Logger.Info($"Blocked team flash: {attackerName} -> {victimName}");
         }
 
-        private bool IsValidClient(int client)
-        {
-            return client > 0 && Engine.IsClientInGame(client) && !Engine.IsClientBot(client);
-        }
-
+        // Вспомогательные методы (пример)
         private bool IsAllowedGrenade(string weapon)
         {
             if (string.IsNullOrEmpty(weapon)) return false;
