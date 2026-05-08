@@ -1,0 +1,10 @@
+{
+  "logAttempts": true,
+  "allowedWeapons": [
+    "hegrenade",
+    "hegrenade_thrown",
+    "molotov",
+    "incendiarygrenade",
+    "incendiarygrenade_thrown"
+  ]
+}

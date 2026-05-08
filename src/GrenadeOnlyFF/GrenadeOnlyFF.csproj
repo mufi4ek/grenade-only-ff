@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>GrenadeOnlyFF</AssemblyName>
+    <RootNamespace>GrenadeOnlyFF</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Если CounterStrikeSharp.dll нет в NuGet, положи её в libs и подключи так -->
+    <Reference Include="CounterStrikeSharp">
+      <HintPath>../../libs/CounterStrikeSharp.API.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
