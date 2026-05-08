@@ -5,12 +5,21 @@
     <AssemblyName>GrenadeOnlyFF</AssemblyName>
     <RootNamespace>GrenadeOnlyFF</RootNamespace>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Если CounterStrikeSharp.dll нет в NuGet, положи её в libs и подключи так -->
+    <!-- Локальная ссылка на DLL CounterStrikeSharp (положи DLL в libs/) -->
     <Reference Include="CounterStrikeSharp">
-      <HintPath>../../libs/CounterStrikeSharp.API.dll</HintPath>
+      <HintPath>../..//libs/CounterStrikeSharp.dll</HintPath>
+      <Private>true</Private>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Копировать конфиг в выходную папку -->
+    <None Update="Config\pluginsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
