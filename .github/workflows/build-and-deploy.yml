@@ -1,4 +1,4 @@
-name: Build and Publish GrenadeOnlyFF
+name: Build GrenadeOnlyFF with diagnostics
 
 on:
   push:
@@ -11,37 +11,79 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show repo files (debug)
-        run: ls -la && ls -la libs || true
+      - name: Show repo files
+        run: |
+          echo "Root:"
+          ls -la
+          echo "libs:"
+          ls -la libs || true
+          echo "src:"
+          ls -la src || true
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Show dotnet info
-        run: dotnet --info
+      - name: Build small inspector tool
+        run: |
+          mkdir -p tools/inspect
+          cat > tools/inspect/Program.cs <<'CS'
+using System;
+using System.IO;
+using System.Reflection;
+class Program {
+  static int Main(string[] args) {
+    if (args.Length==0) { Console.WriteLine("Usage: inspect <dll>"); return 2; }
+    var path = args[0];
+    if (!File.Exists(path)) { Console.WriteLine("DLL not found: "+path); return 3; }
+    try {
+      var asm = Assembly.LoadFile(Path.GetFullPath(path));
+      using var w = new StreamWriter("types.txt");
+      w.WriteLine("Assembly: " + asm.FullName);
+      foreach (var t in asm.GetTypes()) {
+        w.WriteLine((t.Namespace ?? "<global>") + " :: " + t.FullName);
+      }
+      Console.WriteLine("Wrote types.txt");
+      return 0;
+    } catch (Exception e) {
+      Console.WriteLine("Error: " + e);
+      return 4;
+    }
+  }
+}
+CS
+          dotnet new console -o tools/inspect -n InspectApp --force
+          mv tools/inspect/Program.cs tools/inspect/Program.cs
+          (cd tools/inspect && dotnet build -c Release)
 
-      - name: Restore and Build
+      - name: Run inspector on CounterStrikeSharp.API.dll
+        run: |
+          if [ -f libs/CounterStrikeSharp.API.dll ]; then
+            echo "Found libs/CounterStrikeSharp.API.dll"
+            ./tools/inspect/bin/Release/net8.0/InspectApp libs/CounterStrikeSharp.API.dll || true
+            echo "---- types.txt ----"
+            cat types.txt || true
+          else
+            echo "libs/CounterStrikeSharp.API.dll not found in repo. Please add it to /libs/"
+            echo "DLL missing" > types.txt
+          fi
+
+      - name: Restore and Build plugin
         run: |
           dotnet restore src/GrenadeOnlyFF/GrenadeOnlyFF.csproj
-          dotnet build src/GrenadeOnlyFF/GrenadeOnlyFF.csproj -c Release --no-restore
+          dotnet build src/GrenadeOnlyFF/GrenadeOnlyFF.csproj -c Release
 
-      - name: Show build output (debug)
-        run: ls -la src/GrenadeOnlyFF/bin/Release || true
-
-      - name: Pack artifact
-        run: |
-          mkdir -p artifact
-          cp src/GrenadeOnlyFF/bin/Release/net8.0/*.dll artifact/ || true
-          cd artifact
-          zip -r ../GrenadeOnlyFF-artifact.zip *
+      - name: Show build output
+        run: ls -la src/GrenadeOnlyFF/bin/Release/net8.0 || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: GrenadeOnlyFF
-          path: GrenadeOnlyFF-artifact.zip
+          path: |
+            src/GrenadeOnlyFF/bin/Release/net8.0/*.dll
+            types.txt
