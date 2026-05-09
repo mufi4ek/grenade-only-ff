@@ -1,4 +1,5 @@
 {
+  "enabled": true,
   "logAttempts": true,
   "allowedWeapons": [
     "hegrenade",
@@ -6,5 +7,6 @@
     "molotov",
     "incendiarygrenade",
     "incendiarygrenade_thrown"
-  ]
+  ],
+  "configReloadOnChange": true
 }
