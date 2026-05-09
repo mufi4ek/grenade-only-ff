@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Локальная ссылка на CounterStrikeSharp.dll (положи DLL в libs/) -->
     <Reference Include="CounterStrikeSharp">
       <HintPath>../../libs/CounterStrikeSharp.dll</HintPath>
       <Private>true</Private>
