@@ -29,9 +29,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Create inspector source
+      - name: Create inspector project and source
         run: |
           mkdir -p tools/inspect
+          dotnet new console -o tools/inspect -n InspectApp --force
           cat > tools/inspect/Program.cs <<'EOF'
 using System;
 using System.IO;
@@ -57,12 +58,6 @@ class Program {
   }
 }
 EOF
-
-      - name: Create inspector project and build
-        run: |
-          dotnet new console -o tools/inspect -n InspectApp --force
-          # overwrite generated Program.cs with our source
-          mv tools/inspect/Program.cs tools/inspect/Program.cs || true
           (cd tools/inspect && dotnet build -c Release)
 
       - name: Run inspector on CounterStrikeSharp.API.dll
