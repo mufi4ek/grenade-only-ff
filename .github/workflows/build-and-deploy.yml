@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,10 +29,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Build small inspector tool
+      - name: Create inspector source
         run: |
           mkdir -p tools/inspect
-          cat > tools/inspect/Program.cs <<'CS'
+          cat > tools/inspect/Program.cs <<'EOF'
 using System;
 using System.IO;
 using System.Reflection;
@@ -55,9 +56,13 @@ class Program {
     }
   }
 }
-CS
+EOF
+
+      - name: Create inspector project and build
+        run: |
           dotnet new console -o tools/inspect -n InspectApp --force
-          mv tools/inspect/Program.cs tools/inspect/Program.cs
+          # overwrite generated Program.cs with our source
+          mv tools/inspect/Program.cs tools/inspect/Program.cs || true
           (cd tools/inspect && dotnet build -c Release)
 
       - name: Run inspector on CounterStrikeSharp.API.dll
